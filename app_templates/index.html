@@ -1,18 +1,110 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Raspberry Pi Pico W</title>
-    </head>
-    <body>
-        <h1>Success</h1>
-        <p>The Raspberry Pi Pico W is connected to the network!</p>
-        <p>Pico internal temperature: <span id="tempValue"></span>C.</p>
-        <br/>
-        <button id="toggleBtn">Toggle LED</button>
-        <button id="resetBtn">Reset Wifi</button>
-        <script src="data:text/javascript,document.getElementById('toggleBtn').onclick = async function() { await fetch('/toggle'); };" defer></script>
-        <script src="data:text/javascript,document.getElementById('resetBtn').onclick = function() { window.location.href = '/reset'; };" defer></script>
-        <script src="data:text/javascript,async function getTemp() { const elem = document.getElementById('tempValue'); elem.innerHTML = 'Updating...'; const t = await fetch('/temperature'); const tVal = await t.text(); elem.innerHTML = tVal; setTimeout(getTemp, 10000)}; getTemp();" defer></script>
-    </body>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi Pico W</title>
+    <style>
+        body {
+            background-color: #FF3B3B;
+            padding: 10px;
+        }
+
+        .title {
+            color: #F7A7A9;
+            font-family: sans-serif;
+            font-size: 54px;
+        }
+
+        .description {
+            color: #FFF;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 24px;
+        }
+
+        .button-24 {
+            background: #9C0000;
+            border: 1px solid #9C0000;
+            border-radius: 6px;
+            box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+            box-sizing: border-box;
+            color: #FFFFFF;
+            cursor: pointer;
+            display: inline-block;
+            font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 16px;
+            min-height: 40px;
+            outline: 0;
+            padding: 12px 14px;
+            text-align: center;
+            text-rendering: geometricprecision;
+            text-transform: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+        }
+
+        .button-24:hover,
+        .button-24:active {
+            background-color: #FFF;
+            background-position: 0 0;
+            color: #9C0000;
+        }
+
+        .button-24:active {
+            opacity: .5;
+        }
+
+        .button-24-blue {
+            background: #0095ff;
+            border: 1px solid #0095ff;
+            border-radius: 6px;
+            box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+            box-sizing: border-box;
+            color: #FFFFFF;
+            cursor: pointer;
+            display: inline-block;
+            font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 16px;
+            min-height: 40px;
+            outline: 0;
+            padding: 12px 14px;
+            text-align: center;
+            text-rendering: geometricprecision;
+            text-transform: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+        }
+
+        .button-24-blue:hover,
+        .button-24-blue:active {
+            background-color: #FFF;
+            background-position: 0 0;
+            color: #0095ff;
+        }
+
+        .button-24-blue:active {
+            opacity: .5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">Success</div>
+    <p class="description">The Raspberry Pi Pico W is connected to "{{wifi_name}}"!</p>
+
+    <button id="uartMainBtn" class="button-24-blue" role="button">Run Main</button>
+    <button id="resetBtn" class="button-24" role="button">Reset WiFi</button>
+
+    <script src="data:text/javascript,document.getElementById('uartMainBtn').onclick = async function() { await fetch('/vgppq'); window.alert('VGPPQ Program is now Running') };" defer></script>
+    <script src="data:text/javascript,document.getElementById('resetBtn').onclick = function() { window.location.href = '/reset'; };" defer></script>
+</body>
+
 </html>

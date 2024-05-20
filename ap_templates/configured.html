@@ -3,9 +3,28 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Wifi Configured</title>
+        <style>
+            body {
+                background-color: #FF3B3B;
+                padding: 10px;
+            }
+
+            .title {
+                color: #F7A7A9;
+                font-family: sans-serif;
+                font-size: 54px;
+            }
+
+            .description {
+                color: #FFF;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 24px;
+            }
+
+        </style>
     </head>
     <body>
-        <h1>Wifi Configured</h1>
-        <p>The Raspberry Pi Pico will now reboot and attempt to connect to the &quot;{{ssid}}&quot; wireless network...</p>
+        <h1 class="title">Wifi Configured</h1>
+        <p class="description">The Raspberry Pi Pico will now reboot and attempt to connect to the &quot;{{ssid}}&quot; wireless network...</p>
     </body>
 </html>

@@ -1,13 +1,25 @@
 import machine, os, gc
 
-log_file = "log.txt"
-
 LOG_INFO = 0b00001
 LOG_WARNING = 0b00010
 LOG_ERROR = 0b00100
 LOG_DEBUG = 0b01000
 LOG_EXCEPTION = 0b10000
 LOG_ALL = LOG_INFO | LOG_WARNING | LOG_ERROR | LOG_DEBUG | LOG_EXCEPTION
+
+# ========================================================
+#region General Utilities
+
+def gen_today_dt():
+    dt = machine.RTC().datetime()
+    return "{0:04d}-{1:02d}-{2:02d}".format(*dt)
+
+def gen_ts():
+    dt = machine.RTC().datetime()
+    return "{4:02d}:{5:02d}:{6:02d}".format(*dt)
+
+#endregion
+# ========================================================
 
 _logging_types = LOG_ALL
 
@@ -84,11 +96,15 @@ def log(level, text):
   datetime = datetime_string()
   log_entry = "{0} [{1:8} /{2:>4}kB] {3}".format(datetime, level, round(gc.mem_free() / 1024), text)
   print(log_entry)
-  with open(log_file, "a") as logfile:
+  
+  dt = gen_today_dt()
+  fp = "{}.log".format(dt)
+
+  with open(fp, "a", encoding="utf-8") as logfile:
     logfile.write(log_entry + '\n')
 
-  if _log_truncate_at and file_size(log_file) > _log_truncate_at:
-    truncate(log_file, _log_truncate_to)
+  if _log_truncate_at and file_size(fp) > _log_truncate_at:
+    truncate(fp, _log_truncate_to)
 
 def info(*items):
   if _logging_types & LOG_INFO:

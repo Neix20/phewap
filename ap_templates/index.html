@@ -1,19 +1,118 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Raspberry Pi Pico W</title>
-    </head>
-    <body>
-        <h1>Setup</h1>
-        <p>You are connected to the Raspberry Pi Pico W setup page.</p>
-        <p>Let&apos;s configure the wifi connection:</p>
-        <form action="/configure" method="POST" autocomplete="off" autocapitalize="none">
-            <label for="ssid">SSID:</label><br>
-            <input type="text" id="ssid" name="ssid"><br>
-            <label for="password">Password:</label><br>
-            <input type="text" id="password" name="password"><br><br>
-            <button>Save</button>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VG PPQ Raspberry Pico WH</title>
+    <style>
+        body {
+            background-color: #FF3B3B;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            padding-top: 40px;
+        }
+
+        .iot_title_I {
+            color: #F7A7A9;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+
+        .iot_title_II {
+            color: #FFF;
+            font-size: 56px;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+
+        #logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 18px;
+        }
+
+        .iot_body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            row-gap: 10px;
+        }
+
+        #wifi_form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            row-gap: 20px;
+        }
+
+        .input_box {
+            width: 96%;
+            max-width: 800px;
+
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #FFF;
+            border-radius: 3px;
+            box-sizing: border-box;
+
+            display: flex;
+            column-gap: 10px;
+        }
+
+        .input_field {
+            width: 100%;
+            height: 32px;
+            border: none;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #2C3E50;
+            font-size: 18px;
+        }
+
+        .submit_btn {
+            width: 96%;
+            max-width: 800px;
+
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #FFF;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .input_icon {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="iot_body" style="row-gap: 0px;">
+            <div class="iot_body">
+                <div class="iot_title_I">VG PPQ Pico WH</div>
+                <img id="logo" src="img/logo.jpeg" alt="VG PPQ Logo" />
+            </div>
+
+            <h1 class="iot_title_II">WiFi Config</h1>
+        </div>
+
+        <form id="wifi_form" action="/configure" method="POST" autocomplete="off" autocapitalize="none">
+            <div class="input_box">
+                <img class="input_icon" src="img/wifi_b.png" style="height: 24px;" alt="WiFi Name" />
+                <input type="text" id="ssid" class="input_field" name="ssid" style="height: 24px;" placeholder="ssid">
+            </div>
+            <div class="input_box">
+                <img class="input_icon" src="img/wifi_a.png" alt="WiFi Lock" />
+                <input type="text" id="password" class="input_field" name="password" placeholder="password">
+            </div>
+            <button class="submit_btn">Save</button>
         </form>
-    </body>
+    </div>
+</body>
+
 </html>
