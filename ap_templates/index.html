@@ -95,7 +95,7 @@
         <div class="iot_body" style="row-gap: 0px;">
             <div class="iot_body">
                 <div class="iot_title_I">VG PPQ Pico WH</div>
-                <img id="logo" src="img/logo.jpeg" alt="VG PPQ Logo" />
+                <img id="logo" src="data:image/jpeg;base64, {{vgppq_logo}}" alt="VG PPQ Logo" />
             </div>
 
             <h1 class="iot_title_II">WiFi Config</h1>
@@ -103,11 +103,11 @@
 
         <form id="wifi_form" action="/configure" method="POST" autocomplete="off" autocapitalize="none">
             <div class="input_box">
-                <img class="input_icon" src="img/wifi_b.png" style="height: 24px;" alt="WiFi Name" />
+                <img class="input_icon" src="data:image/png;base64, {{wifi_b}}" style="height: 24px;" alt="WiFi Name" />
                 <input type="text" id="ssid" class="input_field" name="ssid" style="height: 24px;" placeholder="ssid">
             </div>
             <div class="input_box">
-                <img class="input_icon" src="img/wifi_a.png" alt="WiFi Lock" />
+                <img class="input_icon" src="data:image/png;base64, {{wifi_a}}" alt="WiFi Lock" />
                 <input type="text" id="password" class="input_field" name="password" placeholder="password">
             </div>
             <button class="submit_btn">Save</button>

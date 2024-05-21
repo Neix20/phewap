@@ -31,7 +31,7 @@ def is_connected_to_wifi():
 
 # helper method to quickly get connected to wifi
 def connect_to_wifi(ssid, password, timeout_seconds=30):
-  import network, time
+  import network, time, ubinascii
 
   statuses = {
     network.STAT_IDLE: "idle",
@@ -48,6 +48,8 @@ def connect_to_wifi(ssid, password, timeout_seconds=30):
   start = time.ticks_ms()
   status = wlan.status()
 
+  mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
+
   logging.debug(f"  - {statuses[status]}")
   while not wlan.isconnected() and (time.ticks_ms() - start) < (timeout_seconds * 1000):
     new_status = wlan.status()
@@ -57,8 +59,8 @@ def connect_to_wifi(ssid, password, timeout_seconds=30):
     time.sleep(0.25)
 
   if wlan.status() == network.STAT_GOT_IP:
-    return wlan.ifconfig()[0]
-  return None
+    return wlan.ifconfig()[0], mac
+  return "127.0.0.1", "127.0.0.1"
 
 
 # helper method to put the pico into access point mode

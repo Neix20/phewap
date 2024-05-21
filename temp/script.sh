@@ -1,0 +1,1 @@
+base64 -i img/logo.jpg -o img/logo.txt

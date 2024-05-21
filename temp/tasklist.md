@@ -9,3 +9,4 @@ When button is pressed, it should
    2. When Program Starts, Run Offline Without MQTT
 3. When Button Is Pressed, Switch To Start Server
    1. If "WiFi.json" exists, Remove File and Start Server
+4. Get W
