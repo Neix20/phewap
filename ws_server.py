@@ -12,22 +12,6 @@ from machine import Pin, UART
 from utils import clsConst, clsUtils
 
 # For Resetting
-led = clsUtils.gen_led()
-
-def machine_reset():
-    utime.sleep(1)
-
-    # Turn on LED Light for 5 Seconds
-    blink_chk, BLINK_CHK_TIME = 1, 10
-    while blink_chk % BLINK_CHK_TIME != 0:
-        led.toggle()
-
-        blink_chk += 1
-        utime.sleep(.5)
-
-    logging.info("Resetting...")
-    machine.reset()
-
 def read_file(fp):
     with open(fp, "r") as f:
         data = f.read()
@@ -59,7 +43,7 @@ def setup_mode():
             f.close()
 
         # Reboot from new thread after we have responded to the user.
-        _thread.start_new_thread(machine_reset, ())
+        _thread.start_new_thread(clsUtils.machine_reset, ())
 
         return render_template(f"{clsConst.AP_TEMPLATE_PATH}/configured.html", ssid = request.form["ssid"])
         
@@ -76,9 +60,6 @@ def setup_mode():
     ap = access_point(clsConst.AP_NAME)
     ip = ap.ifconfig()[0]
     dns.run_catchall(ip)
-
-    # Write To File "Ict Bill"
-    clsUtils.write_to_btn_file("Ict Bill")
 
 def server_main():
 

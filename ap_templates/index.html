@@ -15,16 +15,7 @@
             padding-top: 40px;
         }
 
-        .iot_title_I {
-            color: #F7A7A9;
-            font-size: 48px;
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-
-        .iot_title_II {
-            color: #FFF;
-            font-size: 56px;
+        .iot_title {
             font-weight: bold;
             font-family: sans-serif;
         }
@@ -42,15 +33,8 @@
             row-gap: 10px;
         }
 
-        #wifi_form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            row-gap: 20px;
-        }
-
         .input_box {
-            width: 96%;
+            width: 100%;
             max-width: 800px;
 
             padding: 15px;
@@ -58,9 +42,6 @@
             background-color: #FFF;
             border-radius: 3px;
             box-sizing: border-box;
-
-            display: flex;
-            column-gap: 10px;
         }
 
         .input_field {
@@ -70,17 +51,6 @@
             font-family: Arial, Helvetica, sans-serif;
             color: #2C3E50;
             font-size: 18px;
-        }
-
-        .submit_btn {
-            width: 96%;
-            max-width: 800px;
-
-            padding: 15px;
-            border: 1px solid #ccc;
-            background-color: #FFF;
-            border-radius: 3px;
-            box-sizing: border-box;
         }
 
         .input_icon {
@@ -93,24 +63,24 @@
 <body>
     <div class="container">
         <div class="iot_body" style="row-gap: 0px;">
-            <div class="iot_body">
-                <div class="iot_title_I">VG PPQ Pico WH</div>
+            <div class="iot_body" style="max-width: 800px;">
+                <div class="iot_title" style="color: #F7A7A9; font-size: 48px;">VG PPQ Pico WH</div>
                 <img id="logo" src="data:image/jpeg;base64, {{vgppq_logo}}" alt="VG PPQ Logo" />
             </div>
 
-            <h1 class="iot_title_II">WiFi Config</h1>
+            <h1 class="iot_title" style="color: #FFF; font-size: 56px;">WiFi Config</h1>
         </div>
 
-        <form id="wifi_form" action="/configure" method="POST" autocomplete="off" autocapitalize="none">
-            <div class="input_box">
+        <form class="iot_body" style="row-gap: 20px;" action="/configure" method="POST" autocomplete="off" autocapitalize="none">
+            <div class="input_box" style="display: flex; column-gap: 10px;">
                 <img class="input_icon" src="data:image/png;base64, {{wifi_b}}" style="height: 24px;" alt="WiFi Name" />
                 <input type="text" id="ssid" class="input_field" name="ssid" style="height: 24px;" placeholder="ssid">
             </div>
-            <div class="input_box">
+            <div class="input_box" style="display: flex; column-gap: 10px;">
                 <img class="input_icon" src="data:image/png;base64, {{wifi_a}}" alt="WiFi Lock" />
-                <input type="text" id="password" class="input_field" name="password" placeholder="password">
+                <input type="password" id="password" class="input_field" name="password" placeholder="password">
             </div>
-            <button class="submit_btn">Save</button>
+            <button class="input_box">Save</button>
         </form>
     </div>
 </body>
