@@ -89,6 +89,9 @@ def gen_mqtt_client():
                 if status == "00":
                     ack_s3_chk = 10
 
+            if mqtt_action == "S5":
+                clsUtils.machine_reset()
+
             if mqtt_action == "S4":
                 
                 ict_command_ls = msg["Amount"]
@@ -226,10 +229,6 @@ def pico_btn_poll_msg():
     
                 # Whenever I Press Button, IT will always RESET WiFi, and set program to WiFi Mode
                 clsUtils.write_to_btn_file("WiFi Server")
-    
-                # Send "99" To MB Device
-                command = convert_str_hex("99")
-                mb_uart.write(command)
     
                 # Remove WiFi File
                 try:
