@@ -29,28 +29,27 @@ def write_to_btn_file(data):
 
     # Remove File First
     try:
-        logging.info("Writing {} to {}".format(data, clsConst.EXECUTION_FILE))
+        print("Writing {} to {}".format(data, clsConst.EXECUTION_FILE))
         with open(clsConst.EXECUTION_FILE, "w") as file:
             file.write(data)
 
         file.close()
     except Exception as ex:
-        logging.error(f"Error! Unable to write Data to {clsConst.EXECUTION_FILE}! Exception: {ex}")
+        print(f"Error! Unable to write Data to {clsConst.EXECUTION_FILE}! Exception: {ex}")
 
 def machine_reset():
+
     utime.sleep(1)
 
-    # Turn on LED Light for 5 Seconds
-    blink_chk, BLINK_CHK_TIME = 1, 10
-    while blink_chk % BLINK_CHK_TIME != 0:
+    # Toggle LED for 3 Seconds
+    for _ in range(6):
         led.toggle()
-
-        blink_chk += 1
         utime.sleep(.5)
 
+    # Close LED
     led.value(0)
 
-    logging.info("Resetting...")
+    print("Resetting...")
     machine.reset()
 
 def datetime_string():

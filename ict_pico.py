@@ -1,9 +1,8 @@
 import os
 import machine
 import utime
-import urandom
-import ubinascii
 import ujson
+import _thread
 
 from machine import Pin, UART
 from umqtt.simple import MQTTClient
@@ -27,7 +26,7 @@ def convert_str_hex(data):
 #region Const
 
 ack_s1_chk, ACK_S1_CHK_LIMIT = 1, 4
-ack_s3_chk, ACK_S3_CHK_LIMIT = 1, 4
+ack_s3_chk, ACK_S3_CHK_LIMIT = 1, 2
 
 #endregion
 # ========================================================
@@ -40,6 +39,15 @@ def gen_mqtt_client():
     global ack_s1_chk
     global ack_s3_chk
 
+    global client
+
+    if client != None:
+        return client
+
+    # Generate MQTT Client
+    if ip_address == "127.0.0.1":
+        return None
+
     def callback(topic, msg):
         
         logging.info("Received message on topic: {}, message: {}".format(topic, msg))
@@ -48,6 +56,8 @@ def gen_mqtt_client():
 
         mb_uart = clsUtils.gen_mb_uart()
         ict_uart = clsUtils.gen_ict_uart()
+
+        led = clsUtils.gen_led()
 
         # Two Types of Message:
 
@@ -93,14 +103,25 @@ def gen_mqtt_client():
                         command = convert_str_hex(command)
                         mb_uart.write(command)
 
-                        logging.info("Sending Data to MB: {}".format(command.hex()))
-                        utime.sleep(2)
+                        # logging.info("Sending Data to MB: {}".format(command.hex()))
+                        utime.sleep(.5)
+
+                # Action Data, Send Status Done
+                data = {
+                    "MachineId": client_id,
+                    "Action": "A4"
+                }
+                data = clsUtils.gen_request(data)
+
+                # Send Data
+                data = ujson.dumps(data)
+                mqtt_pub(client, data)
 
         except Exception as ex:
-            logging.error(f"Exception: {ex}")
+            print(f"Exception: {ex}")
 
     # Instantiate MQTT client
-    logging.info("Connecting to MQTT Broker...")
+    # logging.info("Connecting to MQTT Broker...")
     client = MQTTClient(client_id, clsConst.MQTT_HOSTNAME, clsConst.MQTT_PORT, clsConst.MQTT_USERNAME, clsConst.MQTT_PASSWORD)
 
     # Set callback function
@@ -125,12 +146,14 @@ def gen_mqtt_client():
         mqtt_pub(client, data)
 
         # Wait For Message Queue
-        client.wait_msg()
+        client.check_msg()
 
         ack_s1_chk += 1
         utime.sleep(.5)
 
-    logging.info("Connection to MQTT Broker has been established...")
+    ack_s1_chk = 1
+
+    # logging.info("Connection to MQTT Broker has been established...")
 
     return client
 
@@ -146,43 +169,117 @@ def send_hex_signal(uart, hex_value):
 def mqtt_pub(client, data):
     if client == None:
         return
-    logging.info(data)
-    client.publish(clsConst.ICT_TOPIC, data.encode())
+    try:
+        logging.info(data)
+        client.publish(clsConst.ICT_TOPIC, data.encode())
+    except Exception as ex:
+        print(f"Exception: {ex}")
 
 #endregion
 # ========================================================
 
+
 # ========================================================
-#region PICO UART PYTHON CODE
+#region Pico Multi-Thread UART, Button Reset, Poll Check, Message Queue
+
+def pico_btn_poll_msg():
+
+    global pico_btn_poll_msg_thread
+
+    mb_uart = clsUtils.gen_mb_uart()
+    button = clsUtils.gen_reset_button()
+
+    btn_online, BTN_ONLINE_TIME = 1, 20
+    poll_chk, POL_CHK_TIME = 1, 600
+
+    utime.sleep(5)
+
+    client = gen_mqtt_client()
+
+    while True:
+    
+        try:
+            if client != None:
+                client.check_msg()
+    
+            # Poll Every Minute
+            if poll_chk % POL_CHK_TIME == 0:
+    
+                # Action Data, Publish Message MotherBoard and Ict Board is Online
+                data = {
+                    "MachineId": client_id,
+                    "Action": "A2",
+                    "ICTStatus": "00" if ict_online else "01",
+                    "MBStatus": "00" if mb_online else "01"
+                }
+                data = clsUtils.gen_request(data)
+    
+                # Push To Message Queue
+                data = ujson.dumps(data)
+                
+                mqtt_pub(client, data)
+    
+                poll_chk = 1
+    
+            # Button Check
+            if btn_online % BTN_ONLINE_TIME == 0:
+    
+                # Whenever I Press Button, IT will always RESET WiFi, and set program to WiFi Mode
+                clsUtils.write_to_btn_file("WiFi Server")
+    
+                # Send "99" To MB Device
+                command = convert_str_hex("99")
+                mb_uart.write(command)
+    
+                # Remove WiFi File
+                try:
+                    os.remove(clsConst.WIFI_FILE)
+                except Exception as ex2:
+                    print(f"Exception: {ex2}")
+    
+                # Reset Machine
+                clsUtils.machine_reset()
+    
+                # Reset Everything
+                btn_online = 1
+    
+            if button.value() == 0:
+                btn_online += 1
+            else:
+                btn_online -= 1
+                btn_online = max(btn_online, 1)
+    
+            poll_chk += 1
+            utime.sleep(.1)
+        except Exception as ex:
+            print(f"Exception: {ex}")
 
 def uart_main(wifi_creds):
 
-    mb_uart = clsUtils.gen_mb_uart()
-    ict_uart = clsUtils.gen_ict_uart()
-    button = clsUtils.gen_reset_button()
-
+    #region Message Queue
     global client_id
     global ip_address
+    global mb_online
+    global ict_online
+
+    global ack_s3_chk
+
+    mb_uart = clsUtils.gen_mb_uart()
+    ict_uart = clsUtils.gen_ict_uart()
 
     ip_address = wifi_creds["ip_address"]
 
     client_id = "VGT_{}".format(wifi_creds["mac_address"])
     client_id = client_id.replace(":", "")
 
-    # Generate MQTT Client
-    if ip_address != "127.0.0.1":
-        client = gen_mqtt_client()
-    else:
-        client = None
+    client = gen_mqtt_client()
+    #endregion
+
+    # Multi-Threading
+    _thread.start_new_thread(pico_btn_poll_msg, ())
 
     last_ict_command, ict_stack = "", []
-    mb_online, ict_online = False, False
-
     ict_chk_status, ICT_CHK_STATUS_TIME = 1, 150
-    btn_online, BTN_ONLINE_TIME = 1, 20
-    poll_chk, POL_CHK_TIME = 1, 600
-
-    global ack_s3_chk
 
     # Check If Device Has Been Deactivated
     send_hex_signal(ict_uart, [0x0c])
@@ -190,286 +287,225 @@ def uart_main(wifi_creds):
     # Main loop
     while True:
 
-        # Check Client
-        if client != None:
-            client.check_msg()
-
-        # Poll Every Minute
-        if poll_chk % POL_CHK_TIME == 0:
-
-            # Action Data, Publish Message MotherBoard and Ict Board is Online
-            data = {
-                "MachineId": client_id,
-                "Action": "A2",
-                "ICTStatus": "00" if ict_online else "01",
-                "MBStatus": "00" if mb_online else "01"
-            }
-            data = clsUtils.gen_request(data)
-
-            # Push To Message Queue
-            data = ujson.dumps(data)
-            mqtt_pub(client, data)
-
-        if btn_online % BTN_ONLINE_TIME == 0:
-
-            # Whenever I Press Button, IT will always RESET WiFi, and set program to WiFi Mode
-            clsUtils.write_to_btn_file("WiFi Server")
-
-            # Send "99" To MB Device
-            command = convert_str_hex("99")
-            mb_uart.write(command)
-
-            # Remove WiFi File
-            try:
-                os.remove(clsConst.WIFI_FILE)
-            except Exception as ex:
-                print(f"Exception: {ex}")
-
-            # Reset Machine
-            clsUtils.machine_reset()
-
-            # Reset Everything
-            btn_online = 1
-
-        if ict_chk_status % ICT_CHK_STATUS_TIME == 0:
-
-            logging.info("Checking Device Status...")
-
-            send_hex_signal(ict_uart, [0x0c])
-            logging.info("Sending data to ICT: 0C")
-
-            ict_chk_online, ICT_CHK_ONLINE_TIME = 1, 150
-
-            while True:
-
-                # Check Thread If Device is Online
-                if ict_chk_online % ICT_CHK_ONLINE_TIME == 0:
-                    logging.info("ICT Device did not return acknowledgement...")
-                    ict_chk_online = 1
-                    ict_online = False
-                    break
-
-                if ict_uart.any():
-                    ict_data = ict_uart.read()
-                    last_ict_command = ict_data.hex()
-                    logging.info(f"Incoming data from ICT: {last_ict_command}")
-                    break
-
-                ict_chk_online += 1
-                
-                utime.sleep(.1)
-
-            ict_chk_status = 1
-
-        # Check if there is data available to read
-        if mb_uart.any(): 
-
-            mb_data = mb_uart.read()
-            mb_data = mb_data.hex()
-
-            logging.info(f"Incoming data from MB: {mb_data}")
-
-            if mb_data == "02":
-                # Log Message
-                mb_online = True
-                logging.info("MB Device is now online...")
-
-                # Send To Ict As Well
-                send_hex_signal(ict_uart, [0x02])
-                logging.info("ICT Device is now online...")
-
-        # Check if there is data available to read
-        if ict_uart.any(): 
-
-            # Read 10 bytes of data
-            ict_data = ict_uart.read()
-
-            # Convert To Hex Data
-            last_ict_command = ict_data.hex()
-
-            # Ict Online Status
-            ict_online = True
-
-            logging.info(f"Incoming data from ICT: {last_ict_command}")
-
-        if last_ict_command == "10":
-
-            logging.info("MotherBoard has received cash...")
-            utime.sleep(2)
-
-            # Send 10 To Motherboard
-            send_hex_signal(mb_uart, [0x10])
-            logging.info("Sending Data to MB: {}".format(last_ict_command))
-
-            while ack_s3_chk < ACK_S3_CHK_LIMIT:
-
-                # Send Data
-                data = {
-                    "MachineId": client_id,
-                    "Amount": ict_stack[0],
-                    "Action": "A3",
-                    "CreatedDate": clsUtils.datetime_string()
-                }
-                data = clsUtils.gen_request(data)
-
-                # Push To Message Queue
-                data = ujson.dumps(data)
-                mqtt_pub(client, data)
-
-                # Wait For Message Queue
-                client.wait_msg()
-
-                ack_s3_chk += 1
-                utime.sleep(.5)
-
-            ict_stack = []
-            last_ict_command = ""
-
-        if "808f" in last_ict_command:
-
-            logging.info("Initializing ICT Device...")
-
-            command = convert_str_hex("80")
-            mb_uart.write(command)
-
-            utime.sleep(2)
-
-            command = convert_str_hex("8f")
-            mb_uart.write(command)
-
-            utime.sleep(2)
-
-            mb_chk_payment, MB_CHK_PAYMENT_TIME = 1, 100
-
-            while True:
-
-                if mb_chk_payment % MB_CHK_PAYMENT_TIME == 0:
-                    logging.info("MotherBoard did not return acknowledgement....")
-                    mb_chk_payment = 1
-                    mb_online = False
-                    break
-
-                if mb_uart.any():
-
-                    mb_data = mb_uart.read()
-                    mb_data = mb_data.hex()
-
-                    logging.info(f"Incoming data from MB: {mb_data}")
-
-                    if mb_data == "02":
-                        # Send Hex Signal From Motherboard
-                        send_hex_signal(ict_uart, [0x02])
-                        logging.info("MotherBoard has returned acknowledgement....")
-
-                        break
-
-                mb_chk_payment += 1
-                utime.sleep(.1)
-
-            last_ict_command = ""
-
-        # Check This Condition
-        if last_ict_command == "5e":
-
-            command = convert_str_hex("30")
-            ict_uart.write(command)
-
-            utime.sleep(.5)
-
-            # mb_chk_payment, MB_CHK_PAYMENT_TIME = 1, 100
-
-            # while True:
-
-            #     if mb_chk_payment % MB_CHK_PAYMENT_TIME == 0:
-            #         logging.info("MotherBoard did not return acknowledgement....")
-            #         mb_chk_payment = 1
-            #         mb_online = False
-            #         break
-
-            #     if mb_uart.any():
-
-            #         mb_data = mb_uart.read()
-            #         logging.info(f"Incoming data from MB: {mb_data.hex()}")
-
-            #         ict_uart.write(mb_data)
-            #         break
-
-            #     mb_chk_payment += 1
-            #     utime.sleep(.1)
-
-            last_ict_command = ""
-
         try:
-            if len(last_ict_command) >= 4:
-
-                bill_a = last_ict_command[:2]
-                bill_b = last_ict_command[2:]
-
-                if bill_a == str(81) and bill_b in [str(i) for i in range(40, 46)]:
-
-                    # Write to Log
-                    logging.info("Device has accepted bill....")
-
-                    # Wait For MotherBoard Signal Here
-                    command = convert_str_hex(bill_a)
-                    mb_uart.write(command)
-                    logging.info("Sending Data to MB: {}".format(bill_a))
-
+            # ICT Device: Periodically Check Status of ICT Device
+            if ict_chk_status % ICT_CHK_STATUS_TIME == 0:
+    
+                logging.info("Checking Device Status...")
+    
+                send_hex_signal(ict_uart, [0x0c])
+                logging.info("Sending data to ICT: 0C")
+    
+                ict_chk_online, ICT_CHK_ONLINE_TIME = 1, 150
+    
+                while True:
+    
+                    # Check Thread If Device is Online
+                    if ict_chk_online % ICT_CHK_ONLINE_TIME == 0:
+                        logging.info("ICT Device did not return acknowledgement...")
+                        ict_chk_online = 1
+                        ict_online = False
+                        break
+    
+                    if ict_uart.any():
+                        ict_data = ict_uart.read()
+                        last_ict_command = ict_data.hex()
+                        logging.info(f"Incoming data from ICT: {last_ict_command}")
+                        break
+    
+                    ict_chk_online += 1
+                    utime.sleep(.1)
+    
+                ict_chk_status = 1
+    
+            # MB Device: Check if there is data available to read
+            if mb_uart.any(): 
+    
+                mb_data = mb_uart.read()
+                mb_data = mb_data.hex()
+    
+                logging.info(f"Incoming data from MB: {mb_data}")
+    
+                if mb_data == "02":
+                    # Log Message
+                    mb_online = True
+                    logging.info("MB Device is now online...")
+    
+                    # Send To Ict As Well
+                    send_hex_signal(ict_uart, [0x02])
+                    logging.info("ICT Device is now online...")
+    
+            # ICT Device: Check if there is data available to read 
+            if ict_uart.any(): 
+    
+                # Read 10 bytes of data
+                ict_data = ict_uart.read()
+    
+                # Convert To Hex Data
+                last_ict_command = ict_data.hex()
+    
+                # Ict Online Status
+                ict_online = True
+    
+                logging.info(f"Incoming data from ICT: {last_ict_command}")
+    
+            # ICT Device: Check When Money has been Deposited
+            if last_ict_command == "10":
+    
+                logging.info("MotherBoard has received cash...")
+                # utime.sleep(.5)
+    
+                # Send 10 To Motherboard
+                send_hex_signal(mb_uart, [0x10])
+                logging.info("Sending Data to MB: {}".format(last_ict_command))
+    
+                while ack_s3_chk < ACK_S3_CHK_LIMIT:
+    
+                    # Send Data
+                    data = {
+                        "MachineId": client_id,
+                        "Amount": ict_stack[0],
+                        "Action": "A3",
+                        "CreatedDate": clsUtils.datetime_string()
+                    }
+                    data = clsUtils.gen_request(data)
+    
+                    # Push To Message Queue
+                    data = ujson.dumps(data)
+                    mqtt_pub(client, data)
+    
+                    # Wait For Message Queue
+                    client.check_msg()
+    
+                    ack_s3_chk += 1
                     utime.sleep(2)
-
-                    command = convert_str_hex(bill_b)
-                    mb_uart.write(command)
-                    logging.info("Sending Data to MB: {}".format(bill_b))
-
-                    mb_chk_payment, MB_CHK_PAYMENT_TIME = 1, 100
-
-                    while True:
-
-                        # .1 * 10 = 1 Seconds
-                        # .1 * 10 * 10 = 10 seconds
-                        if mb_chk_payment % MB_CHK_PAYMENT_TIME == 0:
-                            logging.info("MotherBoard did not return acknowledgement....")
-                            mb_chk_payment = 1
-                            mb_online = False
+    
+                ack_s3_chk = 1
+                ict_stack = []
+                last_ict_command = ""
+    
+            # ICT Device: Check When Device has been initialized
+            if "808f" in last_ict_command:
+    
+                logging.info("Initializing ICT Device...")
+    
+                command = convert_str_hex("80")
+                mb_uart.write(command)
+    
+                utime.sleep(.5)
+    
+                command = convert_str_hex("8f")
+                mb_uart.write(command)
+    
+                mb_chk_payment, MB_CHK_PAYMENT_TIME = 1, 100
+    
+                while True:
+    
+                    if mb_chk_payment % MB_CHK_PAYMENT_TIME == 0:
+                        logging.info("MotherBoard did not return acknowledgement....")
+                        mb_chk_payment = 1
+                        mb_online = False
+                        break
+    
+                    if mb_uart.any():
+    
+                        mb_data = mb_uart.read()
+                        mb_data = mb_data.hex()
+    
+                        logging.info(f"Incoming data from MB: {mb_data}")
+    
+                        if mb_data == "02":
+                            # Send Hex Signal From Motherboard
+                            send_hex_signal(ict_uart, [0x02])
+                            logging.info("MotherBoard has returned acknowledgement....")
+    
                             break
-
-                        if mb_uart.any():
-
-                            mb_data = mb_uart.read()
-                            mb_data = mb_data.hex()
-
-                            logging.info(f"Incoming data from MB: {mb_data}")
-
-                            if mb_data == "02":
-
-                                # Append Bill to Ict Stack
-                                ict_stack.append(last_ict_command)
-
-                                # Send Hex Signal From Motherboard
-                                send_hex_signal(ict_uart, [0x02])
-                                logging.info("MotherBoard has returned acknowledgement....")
-
+    
+                    mb_chk_payment += 1
+                    utime.sleep(.1)
+    
+                last_ict_command = ""
+    
+            # ICT Device: Check When Ict Device is not accepting Cash
+            if last_ict_command == "5e":
+    
+                command = convert_str_hex("3e")
+                ict_uart.write(command)
+    
+                utime.sleep(.5)
+    
+                last_ict_command = ""
+    
+            # ICT Device: Check When User has insert Money
+            try:
+                # 8140
+                if len(last_ict_command) >= 4:
+    
+                    bill_a = last_ict_command[:2]
+                    bill_b = last_ict_command[2:]
+    
+                    if bill_a == str(81) and bill_b in [str(i) for i in range(40, 44)]:
+    
+                        # Write to Log
+                        logging.info("Device has accepted bill....")
+    
+                        # Wait For MotherBoard Signal Here
+                        command = convert_str_hex(bill_a)
+                        mb_uart.write(command)
+                        logging.info("Sending Data to MB: {}".format(bill_a))
+    
+                        utime.sleep(.5)
+    
+                        command = convert_str_hex(bill_b)
+                        mb_uart.write(command)
+                        logging.info("Sending Data to MB: {}".format(bill_b))
+    
+                        mb_chk_payment, MB_CHK_PAYMENT_TIME = 1, 100
+    
+                        while True:
+    
+                            # .1 * 10 = 1 Seconds
+                            # .1 * 10 * 10 = 10 seconds
+                            if mb_chk_payment % MB_CHK_PAYMENT_TIME == 0:
+                                logging.info("MotherBoard did not return acknowledgement....")
+                                mb_chk_payment = 1
+                                mb_online = False
                                 break
-
-                        mb_chk_payment += 1
-                        utime.sleep(.1)
+    
+                            if mb_uart.any():
+    
+                                mb_data = mb_uart.read()
+                                mb_data = mb_data.hex()
+    
+                                logging.info(f"Incoming data from MB: {mb_data}")
+    
+                                if mb_data == "02":
+    
+                                    # Append Bill to Ict Stack
+                                    ict_stack.append(last_ict_command)
+    
+                                    # Send Hex Signal From Motherboard
+                                    send_hex_signal(ict_uart, [0x02])
+                                    logging.info("MotherBoard has returned acknowledgement....")
+    
+                                    break
+    
+                            mb_chk_payment += 1
+                            utime.sleep(.1)
+            except Exception as ex2:
+                print()
+                raise ex2
+    
+            # ICT Device: Reset Last Ict Device Command
+            if last_ict_command in clsConst.ICT_RESPONSE_CODE:
+                res = clsConst.ICT_RESPONSE_CODE[last_ict_command]
+    
+                logging.info(res)
+                last_ict_command = ""
         except Exception as ex:
             logging.error(f"Exception: {ex}")
 
-        if last_ict_command in clsConst.ICT_RESPONSE_CODE:
-            res = clsConst.ICT_RESPONSE_CODE[last_ict_command]
-
-            logging.info(res)
-            last_ict_command = ""
-
-        if button.value() == 0:
-            btn_online += 1
-        else:
-            btn_online -= 1
-            btn_online = max(btn_online, 1)
-        
         ict_chk_status += 1
-        poll_chk += 1
         utime.sleep(.1)  # Wait for a short time before checking again
 
 #endregion
@@ -479,4 +515,5 @@ def uart_main(wifi_creds):
 # Main Program
 # ========================================================
 
-client_id, ip_address = "", ""
+client, client_id, ip_address = None, "", "127.0.0.1"
+mb_online, ict_online = False, False

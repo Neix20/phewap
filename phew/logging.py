@@ -93,18 +93,21 @@ def truncate(file, target_size):
 
 
 def log(level, text):
-  datetime = datetime_string()
-  log_entry = "{0} [{1:8} /{2:>4}kB] {3}".format(datetime, level, round(gc.mem_free() / 1024), text)
-  print(log_entry)
-  
-  dt = gen_today_dt()
-  fp = "{}.log".format(dt)
-
-  with open(fp, "a", encoding="utf-8") as logfile:
-    logfile.write(log_entry + '\n')
-
-  if _log_truncate_at and file_size(fp) > _log_truncate_at:
-    truncate(fp, _log_truncate_to)
+  try:
+      datetime = datetime_string()
+      log_entry = "{0} [{1:8} /{2:>4}kB] {3}".format(datetime, level, round(gc.mem_free() / 1024), text)
+      print(log_entry)
+      
+      dt = gen_today_dt()
+      fp = "{}.log".format(dt)
+    
+      with open(fp, "a", encoding="utf-8") as logfile:
+        logfile.write(log_entry + '\n')
+    
+      if _log_truncate_at and file_size(fp) > _log_truncate_at:
+        truncate(fp, _log_truncate_to)
+  except Exception as ex:
+      print(f"Exception: {ex}")
 
 def info(*items):
   if _logging_types & LOG_INFO:
