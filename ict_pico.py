@@ -57,8 +57,6 @@ def gen_mqtt_client():
         mb_uart = clsUtils.gen_mb_uart()
         ict_uart = clsUtils.gen_ict_uart()
 
-        led = clsUtils.gen_led()
-
         # Two Types of Message:
 
         # 1. Check Device Status to ICT Device
@@ -89,7 +87,8 @@ def gen_mqtt_client():
                 if status == "00":
                     ack_s3_chk = 10
 
-            if mqtt_action == "S5":
+            if mqtt_action == "S5" and not clsUtils.is_just_restarted():
+                # Check If Machine Just Restarted
                 clsUtils.machine_reset()
 
             if mqtt_action == "S4":
@@ -124,7 +123,7 @@ def gen_mqtt_client():
             print(f"Exception: {ex}")
 
     # Instantiate MQTT client
-    # logging.info("Connecting to MQTT Broker...")
+    logging.info("Connecting to MQTT Broker...")
     client = MQTTClient(client_id, clsConst.MQTT_HOSTNAME, clsConst.MQTT_PORT, clsConst.MQTT_USERNAME, clsConst.MQTT_PASSWORD)
 
     # Set callback function
@@ -152,11 +151,11 @@ def gen_mqtt_client():
         client.check_msg()
 
         ack_s1_chk += 1
-        utime.sleep(.5)
+        utime.sleep(2)
 
     ack_s1_chk = 1
 
-    # logging.info("Connection to MQTT Broker has been established...")
+    logging.info("Connection to MQTT Broker has been established...")
 
     return client
 
@@ -176,7 +175,7 @@ def mqtt_pub(client, data):
         logging.info(data)
         client.publish(clsConst.ICT_TOPIC, data.encode())
     except Exception as ex:
-        print(f"Exception: {ex}")
+        logging.error(f"Exception: {ex}")
 
 #endregion
 # ========================================================
@@ -192,16 +191,17 @@ def pico_btn_poll_msg():
     mb_uart = clsUtils.gen_mb_uart()
     button = clsUtils.gen_reset_button()
 
-    btn_online, BTN_ONLINE_TIME = 1, 20
-    poll_chk, POL_CHK_TIME = 1, 600
+    btn_online, BTN_ONLINE_TIME = 1, 2
+    poll_chk, POL_CHK_TIME = 1, 60
 
     utime.sleep(5)
 
     client = gen_mqtt_client()
 
     while True:
-    
         try:
+            logging.info("Loop Index: {}".format(poll_chk))
+
             if client != None:
                 client.check_msg()
     
@@ -249,9 +249,9 @@ def pico_btn_poll_msg():
                 btn_online = max(btn_online, 1)
     
             poll_chk += 1
-            utime.sleep(.1)
+            utime.sleep(1)
         except Exception as ex:
-            print(f"Exception: {ex}")
+            logging.error(f"Exception: {ex}")
 
 def uart_main(wifi_creds):
 
@@ -277,7 +277,7 @@ def uart_main(wifi_creds):
     # Multi-Threading
     _thread.start_new_thread(pico_btn_poll_msg, ())
 
-    last_ict_command, ict_stack = "", []
+    last_ict_command, ict_stack, money_amount = "", [], 0
     ict_chk_status, ICT_CHK_STATUS_TIME = 1, 150
 
     # Check If Device Has Been Deactivated
@@ -357,15 +357,22 @@ def uart_main(wifi_creds):
                 # Send 10 To Motherboard
                 send_hex_signal(mb_uart, [0x10])
                 logging.info("Sending Data to MB: {}".format(last_ict_command))
-    
-                while ack_s3_chk < ACK_S3_CHK_LIMIT:
+
+                # Log Number of Cash
+                money_amount += 1
+                logging.info("Note No.: {}".format(money_amount))
+                
+                while True:
+                    if ack_s3_chk < ACK_S3_CHK_LIMIT:
+                        break
     
                     # Send Data
                     data = {
                         "MachineId": client_id,
                         "Amount": ict_stack[0],
                         "Action": "A3",
-                        "CreatedDate": clsUtils.datetime_string()
+                        "CreatedDate": clsUtils.datetime_string(),
+                        "Note No.": money_amount
                     }
                     data = clsUtils.gen_request(data)
     

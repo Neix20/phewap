@@ -56,6 +56,12 @@ def datetime_string():
     dt = machine.RTC().datetime()
     return "{0:04d}-{1:02d}-{2:02d} {4:02d}:{5:02d}:{6:02d}".format(*dt)
 
+def is_just_restarted():
+
+    dt = utime.ticks_ms()
+
+    return dt <= (45 * 1000) 
+
 #endregion
 # ========================================================
 
