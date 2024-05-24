@@ -149,6 +149,9 @@ def main():
         utime.sleep(2)
         led.value(1)
 
+        # Write To File "Ict Bill"
+        clsUtils.write_to_btn_file("Ict Bill")
+
         uart_main(VGT_WIFI_CREDS)
         
         # For Some Reason, It Jumps to this, Meaning it Reset Twice

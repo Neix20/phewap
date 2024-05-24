@@ -1,0 +1,94 @@
+[info     / 105kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:15 [info     / 103kB] Incoming data from ICT: 10
+2021-01-01 00:01:15 [info     / 101kB] MotherBoard has received cash...
+2021-01-01 00:01:15 [info     / 141kB] Sending Data to MB: 10
+2021-01-01 00:01:15 [info     / 139kB] Note No.: 15
+2021-01-01 00:01:15 [info     / 136kB] {"Amount": "", "TradeNo": "T1609459275", "Note No.": 15, "CreatedDate": "2021-01-01 00:01:15", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:15 [info     / 132kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459275","Action":"S3","Status":"00"}'
+2021-01-01 00:01:15 [info     / 130kB] Incoming data from MB: 5e
+2021-01-01 00:01:16 [info     / 128kB] Incoming data from ICT: 8140
+2021-01-01 00:01:16 [info     / 125kB] Device has accepted bill....
+2021-01-01 00:01:16 [info     / 123kB] Sending Data to MB: 81
+2021-01-01 00:01:16 [info     / 121kB] Sending Data to MB: 40
+2021-01-01 00:01:17 [info     / 119kB] Incoming data from MB: 3e02
+2021-01-01 00:01:17 [info     / 117kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:17 [info     / 115kB] Incoming data from ICT: 10
+2021-01-01 00:01:17 [info     / 113kB] MotherBoard has received cash...
+2021-01-01 00:01:17 [info     / 110kB] Sending Data to MB: 10
+2021-01-01 00:01:18 [info     / 108kB] Note No.: 16
+2021-01-01 00:01:18 [info     / 142kB] {"Amount": "", "TradeNo": "T1609459278", "Note No.": 16, "CreatedDate": "2021-01-01 00:01:18", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:18 [info     / 138kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459278","Action":"S3","Status":"00"}'
+2021-01-01 00:01:18 [info     / 136kB] Incoming data from MB: 5e
+2021-01-01 00:01:19 [info     / 134kB] Incoming data from ICT: 8140
+2021-01-01 00:01:19 [info     / 131kB] Device has accepted bill....
+2021-01-01 00:01:19 [info     / 129kB] Sending Data to MB: 81
+2021-01-01 00:01:20 [info     / 127kB] Sending Data to MB: 40
+2021-01-01 00:01:20 [info     / 125kB] Incoming data from MB: 3e02
+2021-01-01 00:01:20 [info     / 123kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:21 [info     / 121kB] Incoming data from ICT: 10
+2021-01-01 00:01:21 [info     / 119kB] MotherBoard has received cash...
+2021-01-01 00:01:21 [info     / 116kB] Sending Data to MB: 10
+2021-01-01 00:01:21 [info     / 114kB] Note No.: 17
+2021-01-01 00:01:21 [info     / 111kB] {"Amount": "", "TradeNo": "T1609459281", "Note No.": 17, "CreatedDate": "2021-01-01 00:01:21", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:21 [info     / 108kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459281","Action":"S3","Status":"00"}'
+2021-01-01 00:01:22 [info     / 139kB] Incoming data from MB: 5e
+2021-01-01 00:01:22 [info     / 137kB] Incoming data from ICT: 8140
+2021-01-01 00:01:22 [info     / 120kB] Device has accepted bill....
+2021-01-01 00:01:22 [info     / 118kB] Sending Data to MB: 81
+2021-01-01 00:01:23 [info     / 116kB] Sending Data to MB: 40
+2021-01-01 00:01:23 [info     / 114kB] Incoming data from MB: 02
+2021-01-01 00:01:23 [info     / 112kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:24 [info     / 110kB] Incoming data from MB: 3e
+2021-01-01 00:01:24 [info     / 108kB] Incoming data from ICT: 10
+2021-01-01 00:01:24 [info     / 106kB] MotherBoard has received cash...
+2021-01-01 00:01:24 [info     / 103kB] Sending Data to MB: 10
+2021-01-01 00:01:24 [info     / 141kB] Note No.: 18
+2021-01-01 00:01:24 [info     / 138kB] {"Amount": "", "TradeNo": "T1609459284", "Note No.": 18, "CreatedDate": "2021-01-01 00:01:24", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:24 [info     / 135kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459284","Action":"S3","Status":"00"}'
+2021-01-01 00:01:25 [info     / 132kB] Incoming data from MB: 5e
+2021-01-01 00:01:25 [info     / 130kB] Incoming data from ICT: 8140
+2021-01-01 00:01:25 [info     / 128kB] Device has accepted bill....
+2021-01-01 00:01:25 [info     / 126kB] Sending Data to MB: 81
+2021-01-01 00:01:26 [info     / 124kB] Sending Data to MB: 40
+2021-01-01 00:01:26 [info     / 121kB] Incoming data from MB: 3e02
+2021-01-01 00:01:26 [info     / 119kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:26 [info     / 117kB] Incoming data from ICT: 10
+2021-01-01 00:01:27 [info     / 115kB] MotherBoard has received cash...
+2021-01-01 00:01:27 [info     / 113kB] Sending Data to MB: 10
+2021-01-01 00:01:27 [info     / 111kB] Note No.: 19
+2021-01-01 00:01:27 [info     / 108kB] {"Amount": "", "TradeNo": "T1609459287", "Note No.": 19, "CreatedDate": "2021-01-01 00:01:27", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:27 [info     / 142kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459287","Action":"S3","Status":"00"}'
+2021-01-01 00:01:27 [info     / 139kB] Incoming data from MB: 5e
+2021-01-01 00:01:28 [info     / 137kB] Incoming data from ICT: 8140
+2021-01-01 00:01:28 [info     / 135kB] Device has accepted bill....
+2021-01-01 00:01:28 [info     / 133kB] Sending Data to MB: 81
+2021-01-01 00:01:28 [info     / 130kB] {"VersionNo": "V1.0", "Action": "A2", "TradeNo": "T1609459288", "ICTStatus": "00", "MachineId": "VGT_d83add5ad714", "MBStatus": "01"}
+2021-01-01 00:01:28 [info     / 127kB] Sending Data to MB: 40
+2021-01-01 00:01:28 [info     / 125kB] Incoming data from MB: 3e02
+2021-01-01 00:01:29 [info     / 123kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:29 [info     / 121kB] Incoming data from ICT: 10
+2021-01-01 00:01:29 [info     / 119kB] MotherBoard has received cash...
+2021-01-01 00:01:29 [info     / 117kB] Sending Data to MB: 10
+2021-01-01 00:01:29 [info     / 115kB] Note No.: 20
+2021-01-01 00:01:29 [info     / 112kB] {"Amount": "", "TradeNo": "T1609459289", "Note No.": 20, "CreatedDate": "2021-01-01 00:01:29", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:01:30 [info     / 109kB] "{\"Amount\": \"\", \"TradeNo\": \"T1609459289\", \"Note No.\": 20, \"CreatedDate\": \"2021-01-01 00:01:29\", \"MachineId\": \"VGT_d83add5ad714\", \"VersionNo\": \"V1.0\", \"Action\": \"A3\"}"
+2021-01-01 00:01:31 [info     / 140kB] Incoming data from MB: 5e3e
+2021-01-01 00:01:31 [info     / 138kB] Incoming data from ICT: 8140
+2021-01-01 00:01:31 [info     / 136kB] Device has accepted bill....
+2021-01-01 00:01:31 [info     / 134kB] Sending Data to MB: 81
+2021-01-01 00:01:32 [info     / 131kB] Received message on topic: b'vgppq/VGT_d83add5ad714', message: b'{"MachineId":"VGT_d83add5ad714","TradeNo":"T1609459289","Action":"S3","Status":"00"}'
+2021-01-01 00:01:32 [info     / 128kB] Sending Data to MB: 40
+2021-01-01 00:01:32 [info     / 126kB] Incoming data from MB: 02
+2021-01-01 00:01:32 [info     / 110kB] MotherBoard has returned acknowledgement....
+2021-01-01 00:01:33 [info     / 108kB] Checking Device Status...
+2021-01-01 00:01:33 [info     / 106kB] Sending data to ICT: 0C
+2021-01-01 00:01:33 [info     / 142kB] Incoming data from ICT: 103e
+2021-01-01 00:01:33 [info     / 140kB] MotherBoard has received cash...
+2021-01-01 00:01:33 [info     / 138kB] Sending Data to MB: 103e
+2021-01-01 00:01:33 [info     / 136kB] Note No.: 21
+2021-01-01 00:01:33 [info     / 133kB] {"Amount": "", "TradeNo": "T1609459293", "Note No.": 21, "CreatedDate": "2021-01-01 00:01:33", "MachineId": "VGT_d83add5ad714", "VersionNo": "V1.0", "Action": "A3"}
+2021-01-01 00:00:01 [info     / 165kB] MB UART is Starting....
+2021-01-01 00:00:01 [info     / 162kB] ICT UART is Starting....
+2021-01-01 00:00:01 [info     / 159kB] Registering Reset Button...
+2021-01-01 00:00:01 [info     / 157kB] Registering LED Pins...
+2021-01-01 00:00:05 [info     / 140kB] Running program Ict Bill ....

@@ -120,10 +120,10 @@ def gen_mqtt_client():
                 mqtt_pub(client, data)
 
         except Exception as ex:
-            print(f"Exception: {ex}")
+            print(f"gen_mqtt_client | Exception: {ex}")
 
     # Instantiate MQTT client
-    logging.info("Connecting to MQTT Broker...")
+    # logging.info("Connecting to MQTT Broker...")
     client = MQTTClient(client_id, clsConst.MQTT_HOSTNAME, clsConst.MQTT_PORT, clsConst.MQTT_USERNAME, clsConst.MQTT_PASSWORD)
 
     # Set callback function
@@ -135,7 +135,7 @@ def gen_mqtt_client():
     # Subscribe to topic
     client.subscribe("vgppq/{}".format(client_id))
 
-    while ack_s1_chk < ACK_S1_CHK_LIMIT:
+    while True:
         # Action Data, Publish Client Id To Server
         data = {
             "MachineId": client_id,
@@ -150,12 +150,15 @@ def gen_mqtt_client():
         # Wait For Message Queue
         client.check_msg()
 
+        if ack_s1_chk >= ACK_S1_CHK_LIMIT:
+            break
+
         ack_s1_chk += 1
         utime.sleep(2)
 
     ack_s1_chk = 1
 
-    logging.info("Connection to MQTT Broker has been established...")
+    # logging.info("Connection to MQTT Broker has been established...")
 
     return client
 
@@ -175,7 +178,8 @@ def mqtt_pub(client, data):
         logging.info(data)
         client.publish(clsConst.ICT_TOPIC, data.encode())
     except Exception as ex:
-        logging.error(f"Exception: {ex}")
+        print()
+        raise ex
 
 #endregion
 # ========================================================
@@ -191,8 +195,8 @@ def pico_btn_poll_msg():
     mb_uart = clsUtils.gen_mb_uart()
     button = clsUtils.gen_reset_button()
 
-    btn_online, BTN_ONLINE_TIME = 1, 2
-    poll_chk, POL_CHK_TIME = 1, 60
+    btn_online, BTN_ONLINE_TIME = 1, 20
+    poll_chk, POL_CHK_TIME = 1, 600
 
     utime.sleep(5)
 
@@ -200,7 +204,6 @@ def pico_btn_poll_msg():
 
     while True:
         try:
-            logging.info("Loop Index: {}".format(poll_chk))
 
             if client != None:
                 client.check_msg()
@@ -219,7 +222,6 @@ def pico_btn_poll_msg():
     
                 # Push To Message Queue
                 data = ujson.dumps(data)
-                
                 mqtt_pub(client, data)
     
                 poll_chk = 1
@@ -234,7 +236,7 @@ def pico_btn_poll_msg():
                 try:
                     os.remove(clsConst.WIFI_FILE)
                 except Exception as ex2:
-                    print(f"Exception: {ex2}")
+                    print(f"os_remove | Exception: {ex2}")
     
                 # Reset Machine
                 clsUtils.machine_reset()
@@ -249,9 +251,9 @@ def pico_btn_poll_msg():
                 btn_online = max(btn_online, 1)
     
             poll_chk += 1
-            utime.sleep(1)
+            utime.sleep(.1)
         except Exception as ex:
-            logging.error(f"Exception: {ex}")
+            logging.error(f"pico_btn_poll_msg | Exception: {ex}")
 
 def uart_main(wifi_creds):
 
@@ -325,7 +327,7 @@ def uart_main(wifi_creds):
     
                 logging.info(f"Incoming data from MB: {mb_data}")
     
-                if mb_data == "02":
+                if "02" in mb_data:
                     # Log Message
                     mb_online = True
                     logging.info("MB Device is now online...")
@@ -349,7 +351,7 @@ def uart_main(wifi_creds):
                 logging.info(f"Incoming data from ICT: {last_ict_command}")
     
             # ICT Device: Check When Money has been Deposited
-            if last_ict_command == "10":
+            if "10" in last_ict_command:
     
                 logging.info("MotherBoard has received cash...")
                 # utime.sleep(.5)
@@ -361,30 +363,32 @@ def uart_main(wifi_creds):
                 # Log Number of Cash
                 money_amount += 1
                 logging.info("Note No.: {}".format(money_amount))
-                
+
+                # Send Data
+                data = {
+                    "MachineId": client_id,
+                    "Amount": ict_stack[0],
+                    "Action": "A3",
+                    "CreatedDate": clsUtils.datetime_string(),
+                    "Note No.": money_amount
+                }
+                data = clsUtils.gen_request(data)
+
+                # Problem is 2nd Loop
                 while True:
-                    if ack_s3_chk < ACK_S3_CHK_LIMIT:
-                        break
-    
-                    # Send Data
-                    data = {
-                        "MachineId": client_id,
-                        "Amount": ict_stack[0],
-                        "Action": "A3",
-                        "CreatedDate": clsUtils.datetime_string(),
-                        "Note No.": money_amount
-                    }
-                    data = clsUtils.gen_request(data)
     
                     # Push To Message Queue
                     data = ujson.dumps(data)
                     mqtt_pub(client, data)
-    
+        
                     # Wait For Message Queue
                     client.check_msg()
+                    utime.sleep(.5)
+
+                    if ack_s3_chk >= ACK_S3_CHK_LIMIT:
+                        break
     
                     ack_s3_chk += 1
-                    utime.sleep(2)
     
                 ack_s3_chk = 1
                 ict_stack = []
@@ -420,7 +424,7 @@ def uart_main(wifi_creds):
     
                         logging.info(f"Incoming data from MB: {mb_data}")
     
-                        if mb_data == "02":
+                        if "02" in mb_data:
                             # Send Hex Signal From Motherboard
                             send_hex_signal(ict_uart, [0x02])
                             logging.info("MotherBoard has returned acknowledgement....")
@@ -433,7 +437,7 @@ def uart_main(wifi_creds):
                 last_ict_command = ""
     
             # ICT Device: Check When Ict Device is not accepting Cash
-            if last_ict_command == "5e":
+            if "5e" in last_ict_command:
     
                 command = convert_str_hex("3e")
                 ict_uart.write(command)
@@ -445,10 +449,15 @@ def uart_main(wifi_creds):
             # ICT Device: Check When User has insert Money
             try:
                 # 8140
-                if len(last_ict_command) >= 4:
+                ict_bill_ind = last_ict_command.find("81")
+                if ict_bill_ind != -1 and ict_bill_ind + 2 < len(last_ict_command):
+
+                    last_ict_command = last_ict_command[ict_bill_ind:ict_bill_ind + 4]
     
                     bill_a = last_ict_command[:2]
                     bill_b = last_ict_command[2:]
+
+                    last_ict_command = ""
     
                     if bill_a == str(81) and bill_b in [str(i) for i in range(40, 44)]:
     
@@ -485,7 +494,7 @@ def uart_main(wifi_creds):
     
                                 logging.info(f"Incoming data from MB: {mb_data}")
     
-                                if mb_data == "02":
+                                if "02" in mb_data:
     
                                     # Append Bill to Ict Stack
                                     ict_stack.append(last_ict_command)
@@ -505,11 +514,11 @@ def uart_main(wifi_creds):
             # ICT Device: Reset Last Ict Device Command
             if last_ict_command in clsConst.ICT_RESPONSE_CODE:
                 res = clsConst.ICT_RESPONSE_CODE[last_ict_command]
-    
+
                 logging.info(res)
                 last_ict_command = ""
         except Exception as ex:
-            logging.error(f"Exception: {ex}")
+            logging.error(f"uart_main | Exception: {ex}")
 
         ict_chk_status += 1
         utime.sleep(.1)  # Wait for a short time before checking again
