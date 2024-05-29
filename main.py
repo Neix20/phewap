@@ -91,10 +91,6 @@ def main():
     try:
         with open(clsConst.WIFI_FILE) as file:
             wifi_creds = ujson.load(file)
-
-            # VGT_WIFI_CREDS["ssid"] = wifi_creds["ssid"]
-            # VGT_WIFI_CREDS["password"] = wifi_creds["password"]
-
             VGT_WIFI_CREDS.update(wifi_creds)
 
         file.close()
@@ -115,12 +111,8 @@ def main():
         for _ in range(2):
             led.toggle()
             utime.sleep(.5)
-        
-        # Do The Max Attempts
-        wifi_online, WIFI_ONLINE_TIME = 1, 3
 
-        while wifi_online < WIFI_ONLINE_TIME:
-            
+        for _ in range(3):
             ip_address, mac_address = connect_to_wifi(VGT_WIFI_CREDS["ssid"], VGT_WIFI_CREDS["password"])
 
             if is_connected_to_wifi():
@@ -132,21 +124,19 @@ def main():
 
                 pico_reset_btn_thread_flag = False
                 break
-            else :
-                wifi_online += 1
 
         # Show Signs it is either connected or not connected
+        num_of_blink = 2
         if VGT_WIFI_CREDS["ip_address"] != "127.0.0.1":
-            for _ in range(4):
-                led.toggle()
-                utime.sleep(.5)
-        else:
-            for _ in range(2):
-                led.toggle()
-                utime.sleep(.5)
+            num_of_blink = 4
+        
+        for _ in range(num_of_blink):
+            led.toggle()
+            utime.sleep(.5)
 
         # Turn On Light
         utime.sleep(2)
+
         led.value(1)
 
         # Write To File "Ict Bill"
@@ -165,6 +155,7 @@ def main():
 
         # Turn On Light
         utime.sleep(2)
+
         led.value(1)
 
         # Write To File "Ict Bill"

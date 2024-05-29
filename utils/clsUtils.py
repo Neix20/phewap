@@ -29,7 +29,7 @@ def write_to_btn_file(data):
 
     # Remove File First
     try:
-        print("Writing {} to {}".format(data, clsConst.EXECUTION_FILE))
+        logging.info("Writing {} to {}".format(data, clsConst.EXECUTION_FILE))
         with open(clsConst.EXECUTION_FILE, "w") as file:
             file.write(data)
 
@@ -57,9 +57,7 @@ def datetime_string():
     return "{0:04d}-{1:02d}-{2:02d} {4:02d}:{5:02d}:{6:02d}".format(*dt)
 
 def is_just_restarted():
-
     dt = utime.ticks_ms()
-
     return dt <= (45 * 1000) 
 
 #endregion
