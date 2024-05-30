@@ -74,14 +74,42 @@ project
 └───ws_server.py
 ```
 
-## Modules
+## Light Blinks Process Flow
 
-1. How to Add a new SQL Function?
-2. How to add new CS Function?
-3. How does it work?
-   1. Takes in a Create Table Statement
-   2. Split Into `table name`, `primary key`, `table parameters`
-   3. Generate Function Based on This
+```mermaid
+flowchart TD
+   1((start))
+   2[Blink Two Times\nTo Indicate Power\nHas Turn On]
+   3[Check Number of Times\nLight Blinked]
+   4{If Light Blinks\nn times}
+   41[Mode: WiFi AP Connection]
+   42[Mode: Normal ICT Bill Acceptor]
+   5[Check Number of Times\nLight Blinked]
+   6{If Light Blinks\nn times}
+   61[WiFi Has Successfully Connected]
+   62[Unable to Connect to Wifi\nOffline Mode]
+   7[Start Main Program]
+   8((end))
+
+
+
+   1 --> 2 --> 3 --> 4
+
+   4 -->|1 Time| 41
+   4 -->|2 Time| 42
+
+   42 --> 5 --> 6
+
+   6 -->|1 Time| 61
+   6 -->|2 Time| 62
+
+   61 --> 7
+   62 --> 7
+
+   41 --> 8
+   7 --> 8
+
+```
 
 ## Contributing
 

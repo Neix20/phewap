@@ -133,7 +133,7 @@ def gen_mqtt_client():
         port=clsConst.MQTT_PORT, 
         user=clsConst.MQTT_USERNAME, 
         password=clsConst.MQTT_PASSWORD,
-        keepalive=135
+        keepalive=45
     )
 
     # Set callback function
@@ -188,11 +188,11 @@ def send_hex_signal(uart, hex_value):
     uart.write(hex_data)
 
 def mqtt_pub(client, data):
-    if client == None:
+    if client == None and ACK_POLL_MQTT_CHK:
         return
     try:
-        logging.info(data)
         client.publish(clsConst.ICT_TOPIC, data)
+        logging.info(data)
     except Exception as ex:
         raise ex
 
@@ -209,11 +209,13 @@ def pico_btn_poll_msg():
     button = clsUtils.gen_reset_button()
 
     btn_online, BTN_ONLINE_TIME = 1, 20
-    poll_chk, POL_CHK_TIME = 1, 600
+    poll_chk, POL_CHK_TIME = 1, 300
 
-    wifi_chk, WIFI_CHK_TIME = 1, 3 * 600
-
+    wifi_chk, WIFI_CHK_TIME = 1, 5 * 600
     error_chk, ERROR_CHK_TIME = 1, 8
+
+    ACK_REC_MQTT_CHK = True
+    rec_chk, rec_chk_time = 1, 6
 
     utime.sleep(5)
 
@@ -230,13 +232,22 @@ def pico_btn_poll_msg():
                     # Reset Machine
                     clsUtils.machine_reset()
                 else:
+
                     logging.info("Device is still connected to WiFi {} ...".format(wifi_ssid))
 
                 wifi_chk = 1
 
+            if not ACK_REC_MQTT_CHK:
+                rec_chk += 1
+
+            if rec_chk % rec_chk_time == 0:
+                ACK_REC_MQTT_CHK = True
+                rec_chk = 1
+
             try:
-                if client != None:
+                if client != None and ACK_REC_MQTT_CHK:
                     client.check_msg()
+                    ACK_REC_MQTT_CHK = False
             except Exception as ex2:
                 logging.error("client.check_msg | Exception: {}".format(ex2))
 
@@ -257,11 +268,11 @@ def pico_btn_poll_msg():
                     "MBStatus": "00" if mb_online else "01"
                 }
                 data = clsUtils.gen_request(data)
-    
+
                 # Push To Message Queue
                 data = ujson.dumps(data)
                 mqtt_pub(client, data)
-    
+
                 poll_chk = 1
     
             # Button Check
@@ -307,6 +318,7 @@ def uart_main(wifi_creds):
     global wifi_pswd
 
     global ack_s3_chk
+    global ACK_POLL_MQTT_CHK
 
     mb_uart = clsUtils.gen_mb_uart()
     ict_uart = clsUtils.gen_ict_uart()
@@ -427,13 +439,17 @@ def uart_main(wifi_creds):
 
                 # Problem is 2nd Loop
                 while True:
+
+                    ACK_POLL_MQTT_CHK = True
     
                     # Push To Message Queue
                     data = ujson.dumps(data)
                     mqtt_pub(client, data)
 
-                    # Wait For Message
+                    # Wait Message
                     utime.sleep(.5)
+
+                    ACK_POLL_MQTT_CHK = False
 
                     if ack_s3_chk >= ACK_S3_CHK_LIMIT:
                         break
