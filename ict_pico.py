@@ -188,7 +188,7 @@ def send_hex_signal(uart, hex_value):
     uart.write(hex_data)
 
 def mqtt_pub(client, data):
-    if client == None and ACK_POLL_MQTT_CHK:
+    if client == None or ACK_POLL_MQTT_CHK:
         return
     try:
         client.publish(clsConst.ICT_TOPIC, data)
