@@ -1,1 +1,1 @@
-{ "ssid": "Redmi Note 10S", "password": "abcd1234" }
+{ "ssid": "wifi", "password": "password", "ip_address": "127.0.0.1", "mac_address": "127.0.0.1" }

@@ -31,6 +31,8 @@ def convert_str_hex(data):
 ack_s1_chk, ACK_S1_CHK_LIMIT = 1, 4
 ack_s3_chk, ACK_S3_CHK_LIMIT = 1, 2
 
+ACK_POLL_MQTT_CHK = True
+
 #endregion
 # ========================================================
 

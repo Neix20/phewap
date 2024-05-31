@@ -77,6 +77,7 @@ project
 ## Light Blinks Process Flow
 
 ```mermaid
+
 flowchart TD
    1((start))
    2[Blink Two Times\nTo Indicate Power\nHas Turn On]
@@ -100,8 +101,8 @@ flowchart TD
 
    42 --> 5 --> 6
 
-   6 -->|1 Time| 61
-   6 -->|2 Time| 62
+   6 -->|1 Time| 62
+   6 -->|2 Time| 61
 
    61 --> 7
    62 --> 7

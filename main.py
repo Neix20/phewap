@@ -112,7 +112,7 @@ def main():
             led.toggle()
             utime.sleep(.5)
 
-        for _ in range(3):
+        for _ in range(2):
             ip_address, mac_address = connect_to_wifi(VGT_WIFI_CREDS["ssid"], VGT_WIFI_CREDS["password"])
 
             if is_connected_to_wifi():
@@ -122,8 +122,9 @@ def main():
 
                 logging.info(f"Connected to wifi, IP address {ip_address}, Mac Address {mac_address}")
 
-                pico_reset_btn_thread_flag = False
                 break
+
+        pico_reset_btn_thread_flag = False
 
         # Show Signs it is either connected or not connected
         num_of_blink = 2
@@ -144,7 +145,7 @@ def main():
 
         uart_main(VGT_WIFI_CREDS)
         
-        # For Some Reason, It Jumps to this, Meaning it Reset Twice
+    # For Some Reason, It Jumps to this, Meaning it Reset Twice
     elif data == "WiFi Server":
 
         utime.sleep(2)
